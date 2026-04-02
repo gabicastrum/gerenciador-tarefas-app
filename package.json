@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -32,13 +37,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.27",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
+    "postcss": "^8.5.8",
     "prettier": "^3.8.1",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.2.2",
     "ts-jest": "^29.4.6",
     "typescript": "^5"
   }
