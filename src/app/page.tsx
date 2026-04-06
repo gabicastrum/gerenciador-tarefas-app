@@ -1,6 +1,7 @@
-
 export default function Home() {
   return (
-    <div>Hello World</div>
+    <main className="container-default py-6">
+      <p className="text-text">Página funcionando ✓</p>
+    </main>
   );
 }

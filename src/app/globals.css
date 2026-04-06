@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  /* Fonte */
+  --font-sans: var(--font-manrope);
+
+  /* Cores */
+  --color-primary: rgba(43, 56, 150, 1);
+  --color-secondary: rgba(49, 46, 129, 1);
+  --color-bg: rgba(243, 244, 245, 1);
+  --color-surface: rgba(243, 244, 245, 1);
+  --color-text: rgba(25, 28, 29, 1);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -10,20 +22,17 @@ html, body {
   height: 100%;
 }
 
-:root {
-  --color-primary: #6366f1;
-  --color-secondary: #22c55e;
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #e2e8f0;
+body {
+  @apply bg-bg text-text font-sans;
 }
 
+/* TODO : é exatamente igual a isso
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
+  font-family: var(--font-sans);
+}  */
+  
 .container-default {
   max-width: 1200px;
   margin: 0 auto;
