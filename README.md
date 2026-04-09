@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gerenciador de Tarefas — Frontend
+> Interface web para gerenciamento de tarefas em um to-do list, consumindo a API REST desenvolvida em Spring Boot.
 
-## Getting Started
+---
 
-First, run the development server:
+## 🚀 Tecnologias Utilizadas
+
+| Tecnologia | Descrição |
+|---|---|
+| ⚛️ **React 19** | Biblioteca principal para construção de interfaces |
+| 🔺 **Next.js 16** | Framework React com roteamento e renderização |
+| 🟦 **TypeScript 5** | Tipagem estática para maior segurança no código |
+| 🎨 **Tailwind CSS 4** | Estilização utilitária |
+| 🧩 **shadcn/ui + Radix UI** | Componentes de interface acessíveis e reutilizáveis |
+| 📋 **React Hook Form** | Gerenciamento de formulários |
+| 🔗 **Hookform Resolvers** | Integração entre React Hook Form e Zod |
+| 🧪 **Jest + Testing Library** | Testes unitários e de componentes |
+| 💅 **Sass** | Pré-processador CSS |
+| 🔍 **ESLint + Prettier** | Linting e formatação de código |
+
+---
+
+## 🖥️ Funcionalidades
+
+- 📋 Listagem de tarefas com filtro por status (`PENDENTE` / `CONCLUIDA`)
+- ➕ Criação de novas tarefas
+- ✏️ Edição de título, descrição e status de uma tarefa
+- 🗑️ Remoção de tarefas
+- ✅ Validação de formulários com feedback visual
+
+---
+
+## ⚙️ Como Rodar o Projeto
+
+### Pré-requisitos
+
+- Node.js 20+
+- npm ou yarn
+- API backend rodando em `http://localhost:8080`
+
+### Instalação
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone o repositório
+git clone https://github.com/gabicastrum/gerenciador-tarefas-app.git
+
+# Acesse a pasta do projeto
+cd gerenciador-tarefas-app
+
+# Instale as dependências
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Scripts Disponíveis
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Inicia o servidor de desenvolvimento
+npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Executa os testes
+npm test
 
-## Learn More
+Com o servidor de desenvolvimento rodando, acesse:
 
-To learn more about Next.js, take a look at the following resources:
+http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔌 Conexão com o Backend
 
-## Deploy on Vercel
+O frontend consome a API REST disponível em `http://localhost:8080`. Certifique-se de que o backend está rodando antes de iniciar a aplicação.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Consulte a documentação interativa da API em:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+<p align="center">Feito com apoio de ☕ por <strong>👩‍💻 Gabriela de Castro Laurindo</strong></p>
