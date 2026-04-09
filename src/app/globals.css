@@ -12,12 +12,6 @@
   --color-text: rgba(25, 28, 29, 1);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html, body {
   height: 100%;
 }
@@ -26,13 +20,6 @@ body {
   @apply bg-bg text-text font-sans;
 }
 
-/* TODO : é exatamente igual a isso
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-}  */
-  
 .container-default {
   max-width: 1200px;
   margin: 0 auto;
