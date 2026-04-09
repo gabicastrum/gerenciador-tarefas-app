@@ -3,5 +3,5 @@ export default function Home() {
     <main className="container-default py-6">
       <p className="text-text">Página funcionando ✓</p>
     </main>
-  );
+  )
 }
