@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const FILTROS = [
-  { label: 'Todas',        value: '' },
-  { label: 'Pendente',     value: 'PENDENTE' },
-  { label: 'Concluída',    value: 'CONCLUIDA' },
+  { label: 'Todas', value: '' },
+  { label: 'Pendente', value: 'PENDENTE' },
+  { label: 'Concluída', value: 'CONCLUIDA' },
 ]
 
 export function TarefaFilters() {
@@ -25,7 +25,9 @@ export function TarefaFilters() {
   //TODO: aguardando implementar a funcionalidade no backend
   function aplicarBusca(element: React.ChangeEvent<HTMLInputElement>) {
     const searchParams = new URLSearchParams(params.toString())
-    element.target.value ? searchParams.set('busca', element.target.value) : searchParams.delete('busca')
+    element.target.value
+      ? searchParams.set('busca', element.target.value)
+      : searchParams.delete('busca')
     searchParams.delete('page')
     router.push(`?${searchParams.toString()}`)
   }
@@ -38,12 +40,13 @@ export function TarefaFilters() {
         onChange={aplicarBusca}
         className="max-w-xs"
       />
-      {FILTROS.map(f => (
+      {FILTROS.map((f) => (
         <Button
           key={f.value}
           variant={statusAtual === f.value ? 'default' : 'outline'}
           size="sm"
           onClick={() => aplicarFiltro(f.value)}
+          className={statusAtual === f.value ? 'text-white' : ''}
         >
           {f.label}
         </Button>

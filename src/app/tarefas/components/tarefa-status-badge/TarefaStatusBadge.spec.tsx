@@ -4,7 +4,9 @@ import { StatusTarefa } from '@/types/tarefas'
 
 jest.mock('@/components/ui/badge', () => ({
   Badge: ({ children, variant }: { children: React.ReactNode; variant: string }) => (
-    <span data-testid="badge" data-variant={variant}>{children}</span>
+    <span data-testid="badge" data-variant={variant}>
+      {children}
+    </span>
   ),
 }))
 

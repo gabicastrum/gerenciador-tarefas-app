@@ -53,7 +53,7 @@ describe('TarefaFilters', () => {
     const botaoPendente = screen.getByText('Pendente')
     const botaoTodas = screen.getByText('Todas')
 
-    expect(botaoPendente.closest('button')).toHaveClass('bg-primary') // variant="default"
+    expect(botaoPendente.closest('button')).toHaveClass('bg-primary')
     expect(botaoTodas.closest('button')).not.toHaveClass('bg-primary')
   })
 

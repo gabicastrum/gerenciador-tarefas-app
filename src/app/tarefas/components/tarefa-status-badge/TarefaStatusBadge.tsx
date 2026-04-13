@@ -1,9 +1,12 @@
 import { Badge } from '@/components/ui/badge'
 import { StatusTarefa } from '@/types/tarefas'
 
-const statusMap: Record<StatusTarefa, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  PENDENTE:     { label: 'Pendente',     variant: 'outline' },
-  CONCLUIDA:    { label: 'Concluída',    variant: 'secondary' },
+const statusMap: Record<
+  StatusTarefa,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
+  PENDENTE: { label: 'Pendente', variant: 'outline' },
+  CONCLUIDA: { label: 'Concluída', variant: 'secondary' },
 }
 
 export function TarefaStatusBadge({ status }: { status: StatusTarefa }) {

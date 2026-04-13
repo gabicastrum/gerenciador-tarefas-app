@@ -15,7 +15,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-text/60 hover:text-text transition-colors text-sm"
           >
-            <FaGithub aria-label='Ícone do Github' className="h-4 w-4" />
+            <FaGithub aria-label="Ícone do Github" className="h-4 w-4" />
             GitHub
           </a>
 
@@ -25,7 +25,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-text/60 hover:text-text transition-colors text-sm"
           >
-            <FaLinkedin aria-label='Ícone do LinkedIn' className="h-4 w-4" />
+            <FaLinkedin aria-label="Ícone do LinkedIn" className="h-4 w-4" />
             LinkedIn
           </a>
         </div>

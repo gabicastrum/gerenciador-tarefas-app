@@ -2,8 +2,12 @@ import { TarefaItem } from '../tarefa-item/TarefaItem'
 import { TarefaResponseDTO } from '@/types/tarefas'
 import { Separator } from '@/components/ui/separator'
 import {
-  Pagination, PaginationContent, PaginationItem,
-  PaginationLink, PaginationNext, PaginationPrevious,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination'
 
 interface Props {
