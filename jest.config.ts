@@ -11,6 +11,6 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/src/components/ui/'],
 }
-
 export default createJestConfig(config)
