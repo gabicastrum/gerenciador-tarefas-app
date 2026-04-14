@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button'
 import { TarefaFilters } from './components/tarefa-filters/TarefaFilters'
 import { TarefaLista } from './components/tarefa-lista/TarefaLista'
+import { TarefaCriarModal } from './components/tarefa-criar-modal/TarefaCriarModal'
 
 interface PageProps {
   searchParams: Promise<{ page?: string; status?: string; busca?: string }>
@@ -28,8 +28,7 @@ export default async function TarefasPage({ searchParams }: PageProps) {
           <h1 className="text-2xl font-semibold">Tarefas</h1>
           <p className="text-sm text-text/50 mt-1">{data.totalElementos} tarefas encontradas</p>
         </div>
-        {/* // TODO: implementar funcionalidade de criar nova tarefa */}
-        <Button className="text-white">+ Nova tarefa</Button>
+        <TarefaCriarModal />
       </div>
 
       <TarefaFilters />
