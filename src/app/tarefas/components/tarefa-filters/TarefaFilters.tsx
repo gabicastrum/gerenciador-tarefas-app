@@ -4,57 +4,61 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-const FILTROS = [
-  { label: 'Todas', value: '' },
-  { label: 'Pendente', value: 'PENDENTE' },
-  { label: 'Concluída', value: 'CONCLUIDA' },
+const OPCOES_FILTRO_STATUS = [
+  { label: 'Todas', valor: '' },
+  { label: 'Pendente', valor: 'PENDENTE' },
+  { label: 'Concluída', valor: 'CONCLUIDA' },
 ]
+
+const PARAMETRO_STATUS = 'status'
+const PARAMETRO_BUSCA = 'busca'
+const PARAMETRO_PAGINA = 'page'
+const PLACEHOLDER_BUSCA = 'Buscar tarefa...'
 
 export function TarefaFilters() {
   const router = useRouter()
-  const params = useSearchParams()
-  const statusAtual = params.get('status') ?? ''
+  const parametrosBusca = useSearchParams()
+  const statusSelecionado = parametrosBusca.get(PARAMETRO_STATUS) ?? ''
 
-  function aplicarFiltro(status: string) {
-    const searchParams = new URLSearchParams(params.toString())
-    if (status) {
-      searchParams.set('status', status)
+  function aplicarFiltroStatus(statusFiltro: string) {
+    const parametrosAtualizados = new URLSearchParams(parametrosBusca.toString())
+    if (statusFiltro) {
+      parametrosAtualizados.set(PARAMETRO_STATUS, statusFiltro)
     } else {
-      searchParams.delete('status')
+      parametrosAtualizados.delete(PARAMETRO_STATUS)
     }
-    searchParams.delete('page')
-    router.push(`?${searchParams.toString()}`)
+    parametrosAtualizados.delete(PARAMETRO_PAGINA)
+    router.push(`?${parametrosAtualizados.toString()}`)
   }
 
-  //TODO: aguardando implementar a funcionalidade no backend
-  function aplicarBusca(element: React.ChangeEvent<HTMLInputElement>) {
-    const searchParams = new URLSearchParams(params.toString())
-    if (element.target.value) {
-      searchParams.set('busca', element.target.value)
+  function aplicarBuscaTexto(eventoMudancaInput: React.ChangeEvent<HTMLInputElement>) {
+    const parametrosAtualizados = new URLSearchParams(parametrosBusca.toString())
+    if (eventoMudancaInput.target.value) {
+      parametrosAtualizados.set(PARAMETRO_BUSCA, eventoMudancaInput.target.value)
     } else {
-      searchParams.delete('busca')
+      parametrosAtualizados.delete(PARAMETRO_BUSCA)
     }
-    searchParams.delete('page')
-    router.push(`?${searchParams.toString()}`)
+    parametrosAtualizados.delete(PARAMETRO_PAGINA)
+    router.push(`?${parametrosAtualizados.toString()}`)
   }
 
   return (
     <div className="flex gap-2 flex-wrap mb-4">
       <Input
-        placeholder="Buscar tarefa..."
-        defaultValue={params.get('busca') ?? ''}
-        onChange={aplicarBusca}
+        placeholder={PLACEHOLDER_BUSCA}
+        defaultValue={parametrosBusca.get(PARAMETRO_BUSCA) ?? ''}
+        onChange={aplicarBuscaTexto}
         className="max-w-xs"
       />
-      {FILTROS.map((f) => (
+      {OPCOES_FILTRO_STATUS.map((opcao) => (
         <Button
-          key={f.value}
-          variant={statusAtual === f.value ? 'default' : 'outline'}
+          key={opcao.valor}
+          variant={statusSelecionado === opcao.valor ? 'default' : 'outline'}
           size="sm"
-          onClick={() => aplicarFiltro(f.value)}
-          className={statusAtual === f.value ? 'text-white' : ''}
+          onClick={() => aplicarFiltroStatus(opcao.valor)}
+          className={statusSelecionado === opcao.valor ? 'text-white' : ''}
         >
-          {f.label}
+          {opcao.label}
         </Button>
       ))}
     </div>

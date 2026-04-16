@@ -2,7 +2,6 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
-// Mock do dialog (Radix/shadcn) SEM perder handlers (onClick etc)
 jest.mock('@/components/ui/dialog', () => ({
   DialogHeader: ({ children, ...props }: any) => (
     <div data-testid="dialog-header" {...props}>
@@ -68,7 +67,6 @@ describe('TarefaDetalhesModalBody', () => {
   it('ao clicar no título, entra em modo de edição e mostra input', () => {
     render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
 
-    // clicar no título (DialogTitle) — agora funciona porque o mock repassa onClick
     fireEvent.click(screen.getByTestId('dialog-title'))
 
     const input = screen.getByRole('textbox')
@@ -168,7 +166,6 @@ describe('TarefaDetalhesModalBody', () => {
     const onAtualizar = jest.fn()
     render(<TarefaDetalhesModalBody tarefa={baseTarefa} onAtualizar={onAtualizar} />)
 
-    // A descrição clicável é um role="button"
     fireEvent.click(screen.getByRole('button', { name: /descrição original/i }))
 
     const textarea = screen.getByRole('textbox')
