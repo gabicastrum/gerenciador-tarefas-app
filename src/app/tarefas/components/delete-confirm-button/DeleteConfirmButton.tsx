@@ -23,32 +23,36 @@ interface DeleteConfirmButtonProps<T> {
   onConfirm: (item: T) => Promise<void> | void
 }
 
+const TEXTO_BOTAO_CANCELAR = 'Cancelar'
+const TEXTO_BOTAO_EXCLUIR = 'Excluir'
+const TEXTO_BOTAO_EXCLUINDO = 'Excluindo...'
+
 export function DeleteConfirmButton<T>({
   item,
   titulo,
   descricao,
   onConfirm,
 }: DeleteConfirmButtonProps<T>) {
-  const [loading, setLoading] = useState(false)
+  const [estaCarregando, setEstaCarregando] = useState(false)
 
   async function handleConfirm() {
-    setLoading(true)
+    setEstaCarregando(true)
     try {
       await onConfirm(item)
     } finally {
-      setLoading(false)
+      setEstaCarregando(false)
     }
   }
 
   return (
-    <div onClick={(e) => e.stopPropagation()}>
+    <div onClick={(evento) => evento.stopPropagation()}>
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="shrink-0 text-text/20 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-            disabled={loading}
+            disabled={estaCarregando}
           >
             <Trash2 className="size-4" />
           </Button>
@@ -61,12 +65,12 @@ export function DeleteConfirmButton<T>({
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{TEXTO_BOTAO_CANCELAR}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600 text-white"
               onClick={handleConfirm}
             >
-              {loading ? 'Excluindo...' : 'Excluir'}
+              {estaCarregando ? TEXTO_BOTAO_EXCLUINDO : TEXTO_BOTAO_EXCLUIR}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
