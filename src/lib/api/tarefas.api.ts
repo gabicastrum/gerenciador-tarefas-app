@@ -24,3 +24,15 @@ export async function patchTarefa(id: number, payload: PatchTarefaPayload): Prom
     throw new Error(`Falha ao atualizar tarefa (${response.status})`)
   }
 }
+
+export async function deleteTarefa(id: number): Promise<void> {
+  const baseUrl = assertApiBaseUrl()
+
+  const response = await fetch(`${baseUrl}/tarefas/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Falha ao excluir tarefa (${response.status})`)
+  }
+}

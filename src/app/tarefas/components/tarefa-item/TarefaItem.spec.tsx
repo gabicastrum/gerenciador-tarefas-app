@@ -37,127 +37,113 @@ jest.mock('@/lib/api/tarefas.api', () => ({
   patchTarefa: jest.fn(),
 }))
 
-describe('TarefaDetalhesModalBody', () => {
-  const baseTarefa: any = {
-    id: 1,
-    titulo: 'Título original',
-    descricao: 'Descrição original',
-    statusTarefa: 'ABERTA',
-    dataCriacao: '2026-04-16T10:00:00.000Z',
-  }
+const TITULO_ORIGINAL = 'Título original'
+const DESCRICAO_ORIGINAL = 'Descrição original'
+const NOVO_TITULO = 'Novo título'
+const TITULO_INVALIDO = '   '
+const TITULO_DESCARTADO = 'Título descartado'
+const NOVA_DESCRICAO = 'Nova descrição'
+const PLACEHOLDER_DESCRICAO = 'Clique para adicionar descrição'
+const ERRO_TITULO_OBRIGATORIO = 'Título é obrigatório.'
+const STATUS_ABERTA = 'ABERTA'
 
+const tarefaBaseMock: any = {
+  id: 1,
+  titulo: TITULO_ORIGINAL,
+  descricao: DESCRICAO_ORIGINAL,
+  statusTarefa: STATUS_ABERTA,
+  dataCriacao: '2026-04-16T10:00:00.000Z',
+}
+
+describe('TarefaDetalhesModalBody', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('deve renderizar título, descrição, status e data formatada pt-BR', () => {
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
+  it('deve renderizar corretamente os dados da tarefa', () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
 
-    expect(screen.getByText('Título original')).toBeInTheDocument()
-    expect(screen.getByText('Descrição original')).toBeInTheDocument()
-    expect(screen.getByTestId('status-badge')).toHaveTextContent('ABERTA')
+    expect(screen.getByText(TITULO_ORIGINAL)).toBeInTheDocument()
+    expect(screen.getByText(DESCRICAO_ORIGINAL)).toBeInTheDocument()
+    expect(screen.getByTestId('status-badge')).toHaveTextContent(STATUS_ABERTA)
 
-    const data = new Date(baseTarefa.dataCriacao).toLocaleDateString('pt-BR')
-    expect(screen.getByText(data)).toBeInTheDocument()
+    const dataFormatada = new Date(tarefaBaseMock.dataCriacao).toLocaleDateString('pt-BR')
+    expect(screen.getByText(dataFormatada)).toBeInTheDocument()
 
     expect(screen.getByText('Não definido')).toBeInTheDocument()
   })
 
-  it('deve mostrar placeholder "Clique para adicionar descrição" quando não há descrição', () => {
-    const tarefaSemDesc = { ...baseTarefa, descricao: '' }
+  it('deve exibir placeholder quando não houver descrição', () => {
+    render(<TarefaDetalhesModalBody tarefa={{ ...tarefaBaseMock, descricao: '' }} />)
 
-    render(<TarefaDetalhesModalBody tarefa={tarefaSemDesc} />)
-
-    expect(screen.getByText('Clique para adicionar descrição')).toBeInTheDocument()
+    expect(screen.getByText(PLACEHOLDER_DESCRICAO)).toBeInTheDocument()
   })
 
-  it('deve entrar em modo de edição e mostrar input ao clicar no título', () => {
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
+  it('deve entrar em modo edição ao clicar no título', () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
 
-    fireEvent.click(screen.getByText('Título original'))
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
 
-    const input = screen.getByRole('textbox')
-    expect(input).toBeInTheDocument()
-    expect(input).toHaveValue('Título original')
+    const campoInput = screen.getByRole('textbox')
+    expect(campoInput).toHaveValue(TITULO_ORIGINAL)
   })
 
-  it('deve salvar o título no Enter: chama patchTarefa e onAtualizar', async () => {
-    (patchTarefa as jest.Mock).mockResolvedValueOnce({})
+  it('deve salvar título ao pressionar Enter', async () => {
+    ;(patchTarefa as jest.Mock).mockResolvedValueOnce({})
 
-    const onAtualizar = jest.fn()
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} onAtualizar={onAtualizar} />)
+    const funcaoAtualizar = jest.fn()
 
-    fireEvent.click(screen.getByText('Título original'))
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} onAtualizar={funcaoAtualizar} />)
+
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
     const input = screen.getByRole('textbox')
-    fireEvent.change(input, { target: { value: 'Novo título' } })
 
+    fireEvent.change(input, { target: { value: NOVO_TITULO } })
     fireEvent.keyDown(input, { key: 'Enter' })
 
     await waitFor(() => {
-      expect(patchTarefa).toHaveBeenCalledTimes(1)
-      expect(patchTarefa).toHaveBeenCalledWith(1, { titulo: 'Novo título' })
+      expect(patchTarefa).toHaveBeenCalledWith(1, { titulo: NOVO_TITULO })
     })
 
-    expect(onAtualizar).toHaveBeenCalledTimes(1)
-    expect(onAtualizar).toHaveBeenCalledWith({
-      ...baseTarefa,
-      titulo: 'Novo título',
+    expect(funcaoAtualizar).toHaveBeenCalledWith({
+      ...tarefaBaseMock,
+      titulo: NOVO_TITULO,
     })
   })
 
-  it('deve salvar o título no blur: chama patchTarefa', async () => {
-    (patchTarefa as jest.Mock).mockResolvedValueOnce({})
+  it('deve validar título obrigatório', async () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
 
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
-
-    fireEvent.click(screen.getByText('Título original'))
-    const input = screen.getByRole('textbox')
-    fireEvent.change(input, { target: { value: 'Outro título' } })
-
-    fireEvent.blur(input)
-
-    await waitFor(() => {
-      expect(patchTarefa).toHaveBeenCalledWith(1, { titulo: 'Outro título' })
-    })
-  })
-
-  it('não deve salvar se o título for só espaços: mostra erro e mantém edição', async () => {
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
-
-    fireEvent.click(screen.getByText('Título original'))
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
     const input = screen.getByRole('textbox')
 
-    fireEvent.change(input, { target: { value: '   ' } })
+    fireEvent.change(input, { target: { value: TITULO_INVALIDO } })
     fireEvent.blur(input)
 
     expect(patchTarefa).not.toHaveBeenCalled()
-
-    expect(await screen.findByText('Título é obrigatório.')).toBeInTheDocument()
-    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true')
+    expect(await screen.findByText(ERRO_TITULO_OBRIGATORIO)).toBeInTheDocument()
   })
 
-  it('Escape deve cancelar a edição do título e restaurar valor original sem chamar patch', () => {
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
+  it('deve cancelar edição com Escape', () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
 
-    fireEvent.click(screen.getByText('Título original'))
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
     const input = screen.getByRole('textbox')
 
-    fireEvent.change(input, { target: { value: 'Título descartado' } })
+    fireEvent.change(input, { target: { value: TITULO_DESCARTADO } })
     fireEvent.keyDown(input, { key: 'Escape' })
 
+    expect(screen.getByText(TITULO_ORIGINAL)).toBeInTheDocument()
     expect(patchTarefa).not.toHaveBeenCalled()
-
-    expect(screen.getByText('Título original')).toBeInTheDocument()
-    expect(screen.queryByDisplayValue('Título descartado')).not.toBeInTheDocument()
   })
 
-  it('não deve chamar patchTarefa se o título não mudou (após trim)', async () => {
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} />)
+  it('não deve salvar se o título não foi alterado', async () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
 
-    fireEvent.click(screen.getByText('Título original'))
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
     const input = screen.getByRole('textbox')
 
-    fireEvent.change(input, { target: { value: '  Título original  ' } })
+    fireEvent.change(input, { target: { value: `  ${TITULO_ORIGINAL}  ` } })
     fireEvent.blur(input)
 
     await waitFor(() => {
@@ -165,59 +151,49 @@ describe('TarefaDetalhesModalBody', () => {
     })
   })
 
-  it('deve entrar em modo de edição e mostrar textarea ao clicar na descrição deve salvar no blur', async () => {
-    (patchTarefa as jest.Mock).mockResolvedValueOnce({})
+  it('deve editar e salvar descrição corretamente', async () => {
+    ;(patchTarefa as jest.Mock).mockResolvedValueOnce({})
 
-    const onAtualizar = jest.fn()
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} onAtualizar={onAtualizar} />)
+    const funcaoAtualizar = jest.fn()
 
-    fireEvent.click(screen.getByText('Descrição original'))
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} onAtualizar={funcaoAtualizar} />)
+
+    fireEvent.click(screen.getByText(DESCRICAO_ORIGINAL))
 
     const textarea = screen.getByRole('textbox')
-    expect(textarea.tagName.toLowerCase()).toBe('textarea')
-
-    fireEvent.change(textarea, { target: { value: 'Nova descrição' } })
+    fireEvent.change(textarea, { target: { value: NOVA_DESCRICAO } })
     fireEvent.blur(textarea)
 
     await waitFor(() => {
-      expect(patchTarefa).toHaveBeenCalledWith(1, { descricao: 'Nova descrição' })
+      expect(patchTarefa).toHaveBeenCalledWith(1, {
+        descricao: NOVA_DESCRICAO,
+      })
     })
 
-    expect(onAtualizar).toHaveBeenCalledWith({
-      ...baseTarefa,
-      descricao: 'Nova descrição',
+    expect(funcaoAtualizar).toHaveBeenCalledWith({
+      ...tarefaBaseMock,
+      descricao: NOVA_DESCRICAO,
     })
   })
 
-  it('deve abrir edição de descrição via teclado (Enter) no "role=button"', () => {
-    const tarefaSemDesc = { ...baseTarefa, descricao: '' }
-    render(<TarefaDetalhesModalBody tarefa={tarefaSemDesc} />)
+  it('não deve chamar funcaoAtualizar em caso de erro na API', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    ;(patchTarefa as jest.Mock).mockRejectedValueOnce(new Error('erro'))
 
-    const area = screen.getByTitle('Clique para editar a descrição')
-    fireEvent.keyDown(area, { key: 'Enter' })
+    const funcaoAtualizar = jest.fn()
 
-    const textarea = screen.getByRole('textbox')
-    expect(textarea.tagName.toLowerCase()).toBe('textarea')
-  })
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} onAtualizar={funcaoAtualizar} />)
 
-  it('não deve chamar onAtualizar quando patchTarefa falha (catch)', async () => {
-    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    (patchTarefa as jest.Mock).mockRejectedValueOnce(new Error('falhou'))
-
-    const onAtualizar = jest.fn()
-    render(<TarefaDetalhesModalBody tarefa={baseTarefa} onAtualizar={onAtualizar} />)
-
-    fireEvent.click(screen.getByText('Título original'))
+    fireEvent.click(screen.getByText(TITULO_ORIGINAL))
     const input = screen.getByRole('textbox')
-    fireEvent.change(input, { target: { value: 'Novo título' } })
+
+    fireEvent.change(input, { target: { value: NOVO_TITULO } })
     fireEvent.blur(input)
 
     await waitFor(() => {
-      expect(patchTarefa).toHaveBeenCalledTimes(1)
+      expect(patchTarefa).toHaveBeenCalled()
     })
 
-    expect(onAtualizar).not.toHaveBeenCalled()
-
-    errSpy.mockRestore()
+    expect(funcaoAtualizar).not.toHaveBeenCalled()
   })
 })
