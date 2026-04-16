@@ -179,7 +179,7 @@ export function TarefaDetalhesModalBody({
             <span className="text-xs text-muted-foreground uppercase tracking-wide">
               Vencimento
             </span>
-            <p className="text-sm text-muted-foreground italic">Não definido</p>
+            <p className="text-sm text-muted-foreground italic">Em breve...</p>
           </div>
         </div>
       </div>

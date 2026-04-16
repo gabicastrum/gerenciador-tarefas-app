@@ -79,7 +79,20 @@ jest.mock('@/components/ui/pagination', () => ({
   ),
 }))
 
+const mockObterParametro = jest.fn()
+
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => ({
+    get: mockObterParametro,
+    toString: () => '',
+  }),
+}))
+
 describe('TarefaLista', () => {
+  beforeEach(() => {
+    mockObterParametro.mockReturnValue(null)
+  })
+
   it('deve exibir mensagem quando não há tarefas', () => {
     render(<TarefaLista tarefas={[]} totalPages={0} currentPage={1} />)
 
@@ -177,5 +190,85 @@ describe('TarefaLista', () => {
     expect(linksEncontrados[0]).toHaveAttribute(ATRIBUTO_HREF, '?page=1')
     expect(linksEncontrados[1]).toHaveAttribute(ATRIBUTO_HREF, '?page=2')
     expect(linksEncontrados[2]).toHaveAttribute(ATRIBUTO_HREF, '?page=3')
+  })
+
+  describe('Filtro de busca no frontend', () => {
+    const PARAMETRO_BUSCA = 'busca'
+
+    it('deve filtrar tarefas por título', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? 'Tarefa 1' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 1')).toBeInTheDocument()
+      expect(screen.queryByText('Tarefa 2')).not.toBeInTheDocument()
+      expect(screen.queryByText('Tarefa 3')).not.toBeInTheDocument()
+    })
+
+    it('deve filtrar tarefas por descrição', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? 'Desc 2' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
+      expect(screen.queryByText('Tarefa 1')).not.toBeInTheDocument()
+      expect(screen.queryByText('Tarefa 3')).not.toBeInTheDocument()
+    })
+
+    it('deve ser case-insensitive', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? 'TAREFA 1' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 1')).toBeInTheDocument()
+    })
+
+    it('deve filtrar com espaços antes e depois', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? '  Tarefa 2  ' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
+    })
+
+    it('deve exibir "Nenhuma tarefa encontrada" quando nenhuma corresponde à busca', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? 'inexistente' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText(MENSAGEM_NENHUMA_TAREFA)).toBeInTheDocument()
+    })
+
+    it('deve exibir todas as tarefas quando parâmetro de busca está vazio', () => {
+      mockObterParametro.mockReturnValue(null)
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 1')).toBeInTheDocument()
+      expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
+      expect(screen.getByText('Tarefa 3')).toBeInTheDocument()
+    })
+
+    it('deve buscar parcialmente no título', () => {
+      mockObterParametro.mockImplementation((chave: string) =>
+        chave === PARAMETRO_BUSCA ? 'refa' : null,
+      )
+
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      expect(screen.getByText('Tarefa 1')).toBeInTheDocument()
+      expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
+      expect(screen.getByText('Tarefa 3')).toBeInTheDocument()
+    })
   })
 })

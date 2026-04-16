@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
 import { TarefaResponseDTO } from '@/types/tarefas'
+import { createTarefa } from '@/lib/api/tarefas.api'
 
 interface Props {
   onCriada?: (tarefa: TarefaResponseDTO) => void
@@ -27,11 +28,8 @@ const ESTADO_FORMULARIO_INICIAL = {
   descricao: '',
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
-const TIPO_CONTEUDO = 'application/json'
 const MENSAGEM_ERRO_TITULO_OBRIGATORIO = 'O título é obrigatório.'
 const MENSAGEM_ERRO_CRIAR_TAREFA = 'Não foi possível criar a tarefa. Tente novamente.'
-const MENSAGEM_ERRO_RESPOSTA_API = 'Erro ao criar tarefa.'
 const TEXTO_BOTAO_CRIANDO = 'Criando...'
 const TEXTO_BOTAO_CRIAR = 'Criar tarefa'
 const LABEL_TITULO = 'Título'
@@ -75,19 +73,7 @@ export function TarefaCriarModal({ onCriada }: Props) {
     setEstaCarregando(true)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/tarefas`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': TIPO_CONTEUDO,
-        },
-        body: JSON.stringify(formulario),
-      })
-
-      if (!response.ok) {
-        throw new Error(MENSAGEM_ERRO_RESPOSTA_API)
-      }
-
-      const novaTarefa: TarefaResponseDTO = await response.json()
+      const novaTarefa = await createTarefa(formulario)
 
       onCriada?.(novaTarefa)
 

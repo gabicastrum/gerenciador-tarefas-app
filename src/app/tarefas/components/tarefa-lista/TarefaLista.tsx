@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { TarefaItem } from '../tarefa-item/TarefaItem'
 import { TarefaResponseDTO } from '@/types/tarefas'
 import {
@@ -20,15 +21,40 @@ interface Props {
 
 const MENSAGEM_NENHUMA_TAREFA = 'Nenhuma tarefa encontrada.'
 const PARAMETRO_PAGINA = 'page'
+const PARAMETRO_BUSCA = 'busca'
+
+function construirHrefPaginacao(paginaAtual: number, parametrosBusca: URLSearchParams): string {
+  const parametrosAtualizados = new URLSearchParams(parametrosBusca.toString())
+  parametrosAtualizados.set(PARAMETRO_PAGINA, String(paginaAtual))
+  return `?${parametrosAtualizados.toString()}`
+}
 
 export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, currentPage }: Props) {
+  const parametrosBusca = useSearchParams()
+  const textoBuscaParametro = parametrosBusca.get(PARAMETRO_BUSCA) ?? ''
+
   const [tarefasListadas, setTarefasListadas] = useState<TarefaResponseDTO[]>(tarefasPropriedade)
 
   useEffect(() => {
-    setTarefasListadas(tarefasPropriedade)
-  }, [tarefasPropriedade])
+    let tarefasProcessadas = tarefasPropriedade
 
-  function manipularExclusaoTarefa(tarefaRemovida: TarefaResponseDTO) {
+    if (textoBuscaParametro.trim()) {
+      const textoBuscaNormalizado = textoBuscaParametro.toLowerCase().trim()
+      tarefasProcessadas = tarefasPropriedade.filter((tarefa) => {
+        const tituloNormalizado = tarefa.titulo.toLowerCase()
+        const descricaoNormalizado = (tarefa.descricao || '').toLowerCase()
+
+        return (
+          tituloNormalizado.includes(textoBuscaNormalizado) ||
+          descricaoNormalizado.includes(textoBuscaNormalizado)
+        )
+      })
+    }
+
+    setTarefasListadas(tarefasProcessadas)
+  }, [tarefasPropriedade, textoBuscaParametro])
+
+  function handleDelete(tarefaRemovida: TarefaResponseDTO) {
     setTarefasListadas((tarefasAnterior) =>
       tarefasAnterior.filter((tarefa) => tarefa.id !== tarefaRemovida.id),
     )
@@ -41,7 +67,7 @@ export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, curr
       ) : (
         <div className="flex flex-col gap-2">
           {tarefasListadas.map((tarefa) => (
-            <TarefaItem key={tarefa.id} tarefa={tarefa} onExcluir={manipularExclusaoTarefa} />
+            <TarefaItem key={tarefa.id} tarefa={tarefa} onExcluir={handleDelete} />
           ))}
         </div>
       )}
@@ -50,13 +76,13 @@ export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, curr
         <Pagination className="mt-4">
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href={`?${PARAMETRO_PAGINA}=${currentPage - 1}`} />
+              <PaginationPrevious href={construirHrefPaginacao(currentPage - 1, parametrosBusca)} />
             </PaginationItem>
 
             {Array.from({ length: totalPages }, (_, indice) => (
               <PaginationItem key={indice}>
                 <PaginationLink
-                  href={`?${PARAMETRO_PAGINA}=${indice + 1}`}
+                  href={construirHrefPaginacao(indice + 1, parametrosBusca)}
                   isActive={currentPage === indice + 1}
                 >
                   {indice + 1}
@@ -65,7 +91,7 @@ export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, curr
             ))}
 
             <PaginationItem>
-              <PaginationNext href={`?${PARAMETRO_PAGINA}=${currentPage + 1}`} />
+              <PaginationNext href={construirHrefPaginacao(currentPage + 1, parametrosBusca)} />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

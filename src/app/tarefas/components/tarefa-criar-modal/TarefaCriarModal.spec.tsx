@@ -1,3 +1,4 @@
+import { createTarefa } from '@/lib/api/tarefas.api'
 import { TarefaCriarModal } from './TarefaCriarModal'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
@@ -19,10 +20,13 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
+jest.mock('@/lib/api/tarefas.api', () => ({
+  createTarefa: jest.fn(),
+}))
+
 describe('TarefaCriarModal', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    global.fetch = jest.fn()
   })
 
   it('deve renderizar o trigger do modal', () => {
@@ -47,7 +51,7 @@ describe('TarefaCriarModal', () => {
 
     expect(await screen.findByText(MENSAGEM_ERRO_TITULO_OBRIGATORIO)).toBeInTheDocument()
 
-    expect(global.fetch).not.toHaveBeenCalled()
+    expect(createTarefa).not.toHaveBeenCalled()
   })
 
   it('deve atualizar o input de título', () => {
@@ -65,9 +69,9 @@ describe('TarefaCriarModal', () => {
   it('deve enviar requisição ao criar tarefa com sucesso', async () => {
     const funcaoTarefaCriadaMock = jest.fn()
 
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: CODIGO_RESPOSTA_SUCESSO_ID, titulo: VALOR_TITULO_TESTE }),
+    ;(createTarefa as jest.Mock).mockResolvedValue({
+      id: CODIGO_RESPOSTA_SUCESSO_ID,
+      titulo: VALOR_TITULO_TESTE,
     })
 
     render(<TarefaCriarModal onCriada={funcaoTarefaCriadaMock} />)
@@ -75,23 +79,23 @@ describe('TarefaCriarModal', () => {
     fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_NOVA_TAREFA }))
 
     const inputTitulo = screen.getByPlaceholderText(PLACEHOLDER_TITULO)
-
     fireEvent.change(inputTitulo, { target: { value: VALOR_TITULO_TESTE } })
 
     fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_CRIAR_TAREFA }))
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalled()
+      expect(createTarefa).toHaveBeenCalled()
     })
 
-    expect(funcaoTarefaCriadaMock).toHaveBeenCalled()
+    expect(funcaoTarefaCriadaMock).toHaveBeenCalledWith({
+      id: CODIGO_RESPOSTA_SUCESSO_ID,
+      titulo: VALOR_TITULO_TESTE,
+    })
     expect(refreshMock).toHaveBeenCalled()
   })
 
   it('deve mostrar erro quando API falha', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: false,
-    })
+    ;(createTarefa as jest.Mock).mockRejectedValue(new Error('Erro ao criar'))
 
     render(<TarefaCriarModal />)
 
