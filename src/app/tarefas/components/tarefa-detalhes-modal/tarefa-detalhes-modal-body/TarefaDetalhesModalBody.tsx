@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { TarefaStatusBadge } from '../tarefa-status-badge/TarefaStatusBadge'
+import { TarefaStatusBadge } from '../../tarefa-status-badge/TarefaStatusBadge'
 import { TarefaResponseDTO } from '@/types/tarefas'
 import { PencilLine } from 'lucide-react'
 import { patchTarefa } from '@/lib/api/tarefas.api'

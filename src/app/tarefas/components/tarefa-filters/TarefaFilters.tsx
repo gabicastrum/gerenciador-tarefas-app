@@ -17,7 +17,11 @@ export function TarefaFilters() {
 
   function aplicarFiltro(status: string) {
     const searchParams = new URLSearchParams(params.toString())
-    status ? searchParams.set('status', status) : searchParams.delete('status')
+    if (status) {
+      searchParams.set('status', status)
+    } else {
+      searchParams.delete('status')
+    }
     searchParams.delete('page')
     router.push(`?${searchParams.toString()}`)
   }
@@ -25,9 +29,11 @@ export function TarefaFilters() {
   //TODO: aguardando implementar a funcionalidade no backend
   function aplicarBusca(element: React.ChangeEvent<HTMLInputElement>) {
     const searchParams = new URLSearchParams(params.toString())
-    element.target.value
-      ? searchParams.set('busca', element.target.value)
-      : searchParams.delete('busca')
+    if (element.target.value) {
+      searchParams.set('busca', element.target.value)
+    } else {
+      searchParams.delete('busca')
+    }
     searchParams.delete('page')
     router.push(`?${searchParams.toString()}`)
   }

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { TarefaResponseDTO } from '@/types/tarefas'
-import { TarefaDetalhesModalBody } from './TarefaDetalhesModalBody'
+import { TarefaDetalhesModalBody } from './tarefa-detalhes-modal-body/TarefaDetalhesModalBody'
 
 interface Props {
   tarefa: TarefaResponseDTO
