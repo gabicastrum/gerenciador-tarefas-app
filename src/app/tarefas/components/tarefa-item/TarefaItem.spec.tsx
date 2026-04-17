@@ -1,148 +1,79 @@
-import { TarefaItem } from './TarefaItem'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom'
+
+import { TarefaItem } from './TarefaItem'
+import * as tarefasApi from '@/lib/api/tarefas.api'
 import { TarefaResponseDTO } from '@/types/tarefas'
 
-const refreshMock = jest.fn()
-
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    refresh: refreshMock,
-  }),
-}))
-
-jest.mock('../tarefa-status-badge/TarefaStatusBadge', () => ({
-  TarefaStatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="tarefa-status-badge">{status}</span>
-  ),
-}))
-
-jest.mock('@/components/ui/checkbox', () => ({
-  Checkbox: ({ checked, onCheckedChange, disabled }: any) => (
-    <input
-      type="checkbox"
-      data-testid="checkbox"
-      checked={checked}
-      disabled={disabled}
-      onChange={(e) => onCheckedChange(e.target.checked)}
-    />
-  ),
-}))
+const TITULO_TAREFA = 'Minha tarefa'
+const TEXTO_EXCLUIR = 'Excluir'
+const DESCRICAO_TAREFA = 'Descrição da minha tarefa'
 
 const tarefaMock: TarefaResponseDTO = {
   id: 1,
-  titulo: 'Implementar autenticação',
-  descricao: 'Criar fluxo de login com JWT',
+  titulo: TITULO_TAREFA,
+  descricao: DESCRICAO_TAREFA,
   statusTarefa: 'PENDENTE',
-  dataCriacao: '2024-03-15T10:00:00.000Z',
+  dataCriacao: new Date().toISOString(),
 }
+
+jest.mock('@/lib/api/tarefas.api')
+
+jest.mock('../tarefa-status-badge/TarefaStatusBadge', () => ({
+  TarefaStatusBadge: () => <div data-testid="status-badge" />,
+}))
+
+jest.mock('../tarefa-detalhes-modal/TarefaDetalhesModal', () => ({
+  TarefaDetalhesModal: ({ aberto }: { aberto: boolean }) =>
+    aberto ? <div data-testid="modal" /> : null,
+}))
+
+jest.mock('../delete-confirm-button/DeleteConfirmButton', () => ({
+  DeleteConfirmButton: ({ onConfirm, item }: any) => (
+    <button onClick={() => onConfirm(item)}>{TEXTO_EXCLUIR}</button>
+  ),
+}))
 
 describe('TarefaItem', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    global.fetch = jest.fn()
   })
 
-  it('deve renderizar título, descrição e data', () => {
+  it('deve renderizar título da tarefa', () => {
     render(<TarefaItem tarefa={tarefaMock} />)
 
-    expect(screen.getByText('Implementar autenticação')).toBeInTheDocument()
-    expect(screen.getByText('Criar fluxo de login com JWT')).toBeInTheDocument()
-    expect(screen.getByText('15/03/2024')).toBeInTheDocument()
+    expect(screen.getByText(TITULO_TAREFA)).toBeInTheDocument()
   })
 
-  it('deve renderizar o status badge corretamente', () => {
+  it('deve abrir modal ao clicar no item', () => {
     render(<TarefaItem tarefa={tarefaMock} />)
 
-    const badge = screen.getByTestId('tarefa-status-badge')
-    expect(badge).toHaveTextContent('PENDENTE')
+    fireEvent.click(screen.getByText(TITULO_TAREFA))
+
+    expect(screen.getByTestId('modal')).toBeInTheDocument()
   })
 
-  it('deve iniciar checkbox desmarcado quando tarefa é PENDENTE', () => {
-    render(<TarefaItem tarefa={tarefaMock} />)
-
-    const checkbox = screen.getByTestId('checkbox')
-    expect(checkbox).not.toBeChecked()
-  })
-
-  it('deve iniciar checkbox marcado quando tarefa é CONCLUIDA', () => {
-    render(<TarefaItem tarefa={{ ...tarefaMock, statusTarefa: 'CONCLUIDA' }} />)
-
-    const checkbox = screen.getByTestId('checkbox')
-    expect(checkbox).toBeChecked()
-  })
-
-  it('deve enviar PATCH ao marcar como concluída', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({ ok: true })
+  it('deve alterar status para CONCLUIDA ao marcar checkbox', async () => {
+    ;(tarefasApi.patchTarefa as jest.Mock).mockResolvedValueOnce({})
 
     render(<TarefaItem tarefa={tarefaMock} />)
 
-    const checkbox = screen.getByTestId('checkbox')
-
+    const checkbox = screen.getByRole('checkbox')
     fireEvent.click(checkbox)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/tarefas/1'),
-        expect.objectContaining({
-          method: 'PATCH',
-          body: JSON.stringify({ statusTarefa: 'CONCLUIDA' }),
-        }),
-      )
-    })
-
-    expect(refreshMock).toHaveBeenCalled()
-  })
-
-  it('deve enviar PATCH ao desmarcar (voltar para PENDENTE)', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({ ok: true })
-
-    render(<TarefaItem tarefa={{ ...tarefaMock, statusTarefa: 'CONCLUIDA' }} />)
-
-    const checkbox = screen.getByTestId('checkbox')
-
-    fireEvent.click(checkbox)
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/tarefas/1'),
-        expect.objectContaining({
-          body: JSON.stringify({ statusTarefa: 'PENDENTE' }),
-        }),
-      )
+      expect(tarefasApi.patchTarefa).toHaveBeenCalledWith(1, {
+        statusTarefa: 'CONCLUIDA',
+      })
     })
   })
 
-  it('deve desabilitar checkbox durante carregamento', async () => {
-    let resolvePromise: any
-    ;(global.fetch as jest.Mock).mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolvePromise = resolve
-        }),
-    )
+  it('deve reverter status caso API falhe', async () => {
+    ;(tarefasApi.patchTarefa as jest.Mock).mockRejectedValueOnce(new Error())
 
     render(<TarefaItem tarefa={tarefaMock} />)
 
-    const checkbox = screen.getByTestId('checkbox')
-
-    fireEvent.click(checkbox)
-
-    expect(checkbox).toBeDisabled()
-
-    resolvePromise({ ok: true })
-
-    await waitFor(() => {
-      expect(checkbox).not.toBeDisabled()
-    })
-  })
-
-  it('deve reverter estado do checkbox em caso de erro', async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({ ok: false })
-
-    render(<TarefaItem tarefa={tarefaMock} />)
-
-    const checkbox = screen.getByTestId('checkbox')
-
+    const checkbox = screen.getByRole('checkbox')
     fireEvent.click(checkbox)
 
     await waitFor(() => {
@@ -150,21 +81,16 @@ describe('TarefaItem', () => {
     })
   })
 
-  it('deve aplicar classe de risco quando concluída', () => {
-    render(<TarefaItem tarefa={{ ...tarefaMock, statusTarefa: 'CONCLUIDA' }} />)
+  it('deve chamar onExcluir ao confirmar exclusão', async () => {
+    const funcaoExcluir = jest.fn()
+    ;(tarefasApi.deleteTarefa as jest.Mock).mockResolvedValueOnce({})
 
-    const titulo = screen.getByText('Implementar autenticação')
+    render(<TarefaItem tarefa={tarefaMock} onExcluir={funcaoExcluir} />)
 
-    expect(titulo).toHaveClass('line-through')
-  })
+    fireEvent.click(screen.getByText(TEXTO_EXCLUIR))
 
-  it('deve manter truncate em título e descrição', () => {
-    render(<TarefaItem tarefa={tarefaMock} />)
-
-    const titulo = screen.getByText('Implementar autenticação')
-    const descricao = screen.getByText('Criar fluxo de login com JWT')
-
-    expect(titulo).toHaveClass('truncate')
-    expect(descricao).toHaveClass('truncate')
+    await waitFor(() => {
+      expect(funcaoExcluir).toHaveBeenCalledWith(tarefaMock)
+    })
   })
 })

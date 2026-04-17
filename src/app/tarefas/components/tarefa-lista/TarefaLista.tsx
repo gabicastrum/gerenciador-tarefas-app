@@ -1,6 +1,9 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { TarefaItem } from '../tarefa-item/TarefaItem'
 import { TarefaResponseDTO } from '@/types/tarefas'
-import { Separator } from '@/components/ui/separator'
 import {
   Pagination,
   PaginationContent,
@@ -16,37 +19,79 @@ interface Props {
   currentPage: number
 }
 
-export function TarefaLista({ tarefas = [], totalPages, currentPage }: Props) {
+const MENSAGEM_NENHUMA_TAREFA = 'Nenhuma tarefa encontrada.'
+const PARAMETRO_PAGINA = 'page'
+const PARAMETRO_BUSCA = 'busca'
+
+function construirHrefPaginacao(paginaAtual: number, parametrosBusca: URLSearchParams): string {
+  const parametrosAtualizados = new URLSearchParams(parametrosBusca.toString())
+  parametrosAtualizados.set(PARAMETRO_PAGINA, String(paginaAtual))
+  return `?${parametrosAtualizados.toString()}`
+}
+
+export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, currentPage }: Props) {
+  const parametrosBusca = useSearchParams()
+  const textoBuscaParametro = parametrosBusca.get(PARAMETRO_BUSCA) ?? ''
+
+  const [tarefasListadas, setTarefasListadas] = useState<TarefaResponseDTO[]>(tarefasPropriedade)
+
+  useEffect(() => {
+    let tarefasProcessadas = tarefasPropriedade
+
+    if (textoBuscaParametro.trim()) {
+      const textoBuscaNormalizado = textoBuscaParametro.toLowerCase().trim()
+      tarefasProcessadas = tarefasPropriedade.filter((tarefa) => {
+        const tituloNormalizado = tarefa.titulo.toLowerCase()
+        const descricaoNormalizado = (tarefa.descricao || '').toLowerCase()
+
+        return (
+          tituloNormalizado.includes(textoBuscaNormalizado) ||
+          descricaoNormalizado.includes(textoBuscaNormalizado)
+        )
+      })
+    }
+
+    setTarefasListadas(tarefasProcessadas)
+  }, [tarefasPropriedade, textoBuscaParametro])
+
+  function handleDelete(tarefaRemovida: TarefaResponseDTO) {
+    setTarefasListadas((tarefasAnterior) =>
+      tarefasAnterior.filter((tarefa) => tarefa.id !== tarefaRemovida.id),
+    )
+  }
+
   return (
     <div>
-      <div className="border border-white/10 rounded-xl overflow-hidden">
-        {tarefas.length === 0 ? (
-          <p className="text-center text-sm text-text/40 py-12">Nenhuma tarefa encontrada.</p>
-        ) : (
-          tarefas.map((tarefa, i) => (
-            <div key={tarefa.id}>
-              <TarefaItem tarefa={tarefa} />
-              {i < tarefas.length - 1 && <Separator className="bg-white/5" />}
-            </div>
-          ))
-        )}
-      </div>
+      {tarefasListadas.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-12">{MENSAGEM_NENHUMA_TAREFA}</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {tarefasListadas.map((tarefa) => (
+            <TarefaItem key={tarefa.id} tarefa={tarefa} onExcluir={handleDelete} />
+          ))}
+        </div>
+      )}
 
       {totalPages > 1 && (
         <Pagination className="mt-4">
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href={`?page=${currentPage - 1}`} />
+              <PaginationPrevious href={construirHrefPaginacao(currentPage - 1, parametrosBusca)} />
             </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink href={`?page=${i + 1}`} isActive={currentPage === i + 1}>
-                  {i + 1}
+
+            {Array.from({ length: totalPages }, (_, indice) => (
+              <PaginationItem key={indice}>
+                <PaginationLink
+                  href={construirHrefPaginacao(indice + 1, parametrosBusca)}
+                  isActive={currentPage === indice + 1}
+                >
+                  {indice + 1}
                 </PaginationLink>
               </PaginationItem>
             ))}
+
             <PaginationItem>
-              <PaginationNext href={`?page=${currentPage + 1}`} />
+              <PaginationNext href={construirHrefPaginacao(currentPage + 1, parametrosBusca)} />
             </PaginationItem>
           </PaginationContent>
         </Pagination>
