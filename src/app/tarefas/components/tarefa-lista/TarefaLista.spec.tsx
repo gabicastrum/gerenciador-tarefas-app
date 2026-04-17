@@ -1,5 +1,5 @@
 import { TarefaLista } from './TarefaLista'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { TarefaResponseDTO } from '@/types/tarefas'
 
 const MENSAGEM_NENHUMA_TAREFA = 'Nenhuma tarefa encontrada.'
@@ -41,8 +41,10 @@ const tarefasMockBasicas: TarefaResponseDTO[] = [
 ]
 
 jest.mock('../tarefa-item/TarefaItem', () => ({
-  TarefaItem: ({ tarefa }: { tarefa: TarefaResponseDTO }) => (
-    <div data-testid={TESTID_TAREFA_ITEM}>{tarefa.titulo}</div>
+  TarefaItem: ({ tarefa, onExcluir }: { tarefa: TarefaResponseDTO; onExcluir?: (t: TarefaResponseDTO) => void }) => (
+    <div data-testid={TESTID_TAREFA_ITEM} onClick={() => onExcluir?.(tarefa)}>
+      {tarefa.titulo}
+    </div>
   ),
 }))
 
@@ -269,6 +271,20 @@ describe('TarefaLista', () => {
       expect(screen.getByText('Tarefa 1')).toBeInTheDocument()
       expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
       expect(screen.getByText('Tarefa 3')).toBeInTheDocument()
+    })
+
+    it('deve remover tarefa quando onExcluir é chamado (linhas 58-59)', () => {
+      render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+      const itensAntes = screen.getAllByTestId(TESTID_TAREFA_ITEM)
+      expect(itensAntes).toHaveLength(3)
+      expect(screen.getByText('Tarefa 2')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('Tarefa 2'))
+
+      expect(screen.queryByText('Tarefa 2')).not.toBeInTheDocument()
+      const itensDepois = screen.getAllByTestId(TESTID_TAREFA_ITEM)
+      expect(itensDepois).toHaveLength(2)
     })
   })
 })

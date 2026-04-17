@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { TarefaStatusBadge } from '../tarefa-status-badge/TarefaStatusBadge'
 import { TarefaDetalhesModal } from '../tarefa-detalhes-modal/TarefaDetalhesModal'
-import { DeleteConfirmButton } from '../delete-confirm-button/DeleteConfirmButton'
+import { DeleteConfirmButton } from '../../../../components/layout/delete-confirm-button/DeleteConfirmButton'
 
 import { TarefaResponseDTO } from '@/types/tarefas'
 import { patchTarefa, deleteTarefa } from '@/lib/api/tarefas.api'

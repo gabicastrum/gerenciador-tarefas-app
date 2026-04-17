@@ -119,4 +119,19 @@ describe('TarefaCriarModal', () => {
 
     expect(screen.queryByText(TEXTO_DESCRICAO_MODAL)).not.toBeInTheDocument()
   })
+
+  it('deve limpar mensagem de erro ao digitador após exibir erro', () => {
+    render(<TarefaCriarModal />)
+
+    fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_NOVA_TAREFA }))
+
+    fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_CRIAR_TAREFA }))
+
+    expect(screen.getByText(MENSAGEM_ERRO_TITULO_OBRIGATORIO)).toBeInTheDocument()
+
+    const inputTitulo = screen.getByPlaceholderText(PLACEHOLDER_TITULO)
+    fireEvent.change(inputTitulo, { target: { value: 'Nova entrada' } })
+
+    expect(screen.queryByText(MENSAGEM_ERRO_TITULO_OBRIGATORIO)).not.toBeInTheDocument()
+  })
 })

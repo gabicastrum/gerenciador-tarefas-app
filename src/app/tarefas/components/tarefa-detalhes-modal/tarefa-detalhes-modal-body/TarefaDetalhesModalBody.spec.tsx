@@ -223,4 +223,50 @@ describe('TarefaDetalhesModalBody', () => {
 
     expect(screen.getByTestId('status-badge')).toHaveTextContent('CONCLUIDA')
   })
+
+  it('trata campo como string vazio quando propriedade não existe (linha 33)', async () => {
+    ;(patchTarefa as jest.Mock).mockResolvedValueOnce({})
+
+    const tarefaSemCampo = { ...tarefaBaseMock, descricao: undefined as any }
+    const onAtualizar = jest.fn()
+    render(<TarefaDetalhesModalBody tarefa={tarefaSemCampo} onAtualizar={onAtualizar} />)
+
+    const area = screen.getByTitle('Clique para editar a descrição')
+    fireEvent.click(area)
+
+    const textarea = screen.getByRole('textbox')
+    fireEvent.change(textarea, { target: { value: 'Nova descrição' } })
+    fireEvent.blur(textarea)
+
+    await waitFor(() => {
+      expect(patchTarefa).toHaveBeenCalledWith(1, { descricao: 'Nova descrição' })
+    })
+  })
+
+  it('limpa erro do título ao digitador (linha 79)', () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
+
+    fireEvent.click(screen.getByTestId('dialog-title'))
+
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: '   ' } })
+    fireEvent.blur(input)
+
+    expect(screen.getByText('Título é obrigatório.')).toBeInTheDocument()
+
+    const inputComErro = screen.getByRole('textbox')
+    fireEvent.change(inputComErro, { target: { value: 'Novo valor' } })
+
+    expect(screen.queryByText('Título é obrigatório.')).not.toBeInTheDocument()
+  })
+
+  it('abre edição de descrição via teclado (Space) no "role=button" (linha 143)', () => {
+    render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} />)
+
+    const area = screen.getByRole('button', { name: /descrição original/i })
+    fireEvent.keyDown(area, { key: ' ' })
+
+    const textarea = screen.getByRole('textbox')
+    expect(textarea.tagName.toLowerCase()).toBe('textarea')
+  })
 })

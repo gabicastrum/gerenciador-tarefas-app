@@ -7,11 +7,3 @@ export interface TarefaResponseDTO {
   statusTarefa: StatusTarefa
   dataCriacao: string
 }
-
-export interface TarefaPageResponse {
-  conteudo: TarefaResponseDTO[]
-  pagina: number
-  tamanho: number
-  totalElementos: number
-  totalPaginas: number
-}

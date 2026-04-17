@@ -28,7 +28,7 @@ jest.mock('../tarefa-detalhes-modal/TarefaDetalhesModal', () => ({
     aberto ? <div data-testid="modal" /> : null,
 }))
 
-jest.mock('../delete-confirm-button/DeleteConfirmButton', () => ({
+jest.mock('../../../../components/layout/delete-confirm-button/DeleteConfirmButton', () => ({
   DeleteConfirmButton: ({ onConfirm, item }: any) => (
     <button onClick={() => onConfirm(item)}>{TEXTO_EXCLUIR}</button>
   ),
@@ -91,6 +91,22 @@ describe('TarefaItem', () => {
 
     await waitFor(() => {
       expect(funcaoExcluir).toHaveBeenCalledWith(tarefaMock)
+    })
+  })
+
+  it('deve chamar handleToggle apenas quando valor é boolean (linhas 96-99)', async () => {
+    ;(tarefasApi.patchTarefa as jest.Mock).mockResolvedValueOnce({})
+
+    render(<TarefaItem tarefa={tarefaMock} />)
+
+    const checkbox = screen.getByRole('checkbox')
+
+    expect(checkbox).not.toBeChecked()
+
+    fireEvent.click(checkbox)
+
+    await waitFor(() => {
+      expect(tarefasApi.patchTarefa).toHaveBeenCalled()
     })
   })
 })
