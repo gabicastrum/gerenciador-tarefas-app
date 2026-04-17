@@ -34,11 +34,14 @@ export function DeleteConfirmButton<T>({
   onConfirm,
 }: DeleteConfirmButtonProps<T>) {
   const [estaCarregando, setEstaCarregando] = useState(false)
+  const [modalEstaAberto, setModalEstaAberto] = useState(false)
 
   async function handleConfirm() {
     setEstaCarregando(true)
+
     try {
       await onConfirm(item)
+      setModalEstaAberto(false)
     } finally {
       setEstaCarregando(false)
     }
@@ -46,7 +49,7 @@ export function DeleteConfirmButton<T>({
 
   return (
     <div onClick={(evento) => evento.stopPropagation()}>
-      <AlertDialog>
+      <AlertDialog open={modalEstaAberto} onOpenChange={setModalEstaAberto}>
         <AlertDialogTrigger asChild>
           <Button
             variant="ghost"
@@ -66,9 +69,13 @@ export function DeleteConfirmButton<T>({
 
           <AlertDialogFooter>
             <AlertDialogCancel>{TEXTO_BOTAO_CANCELAR}</AlertDialogCancel>
+
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={handleConfirm}
+              onClick={(e) => {
+                e.preventDefault()
+                handleConfirm()
+              }}
             >
               {estaCarregando ? TEXTO_BOTAO_EXCLUINDO : TEXTO_BOTAO_EXCLUIR}
             </AlertDialogAction>

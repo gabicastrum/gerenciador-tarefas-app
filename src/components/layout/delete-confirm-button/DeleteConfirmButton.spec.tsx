@@ -68,7 +68,7 @@ describe('DeleteConfirmButton', () => {
   })
 
   it('deve chamar onConfirm ao confirmar exclusão', async () => {
-    const funcaoConfirmar = jest.fn()
+    const funcaoConfirmar = jest.fn().mockResolvedValue(undefined)
 
     render(
       <DeleteConfirmButton item={itemMock} titulo={TEXTO_TITULO} onConfirm={funcaoConfirmar} />,
@@ -82,8 +82,14 @@ describe('DeleteConfirmButton', () => {
   })
 
   it('deve exibir estado de loading durante exclusão', async () => {
-    const funcaoConfirmar = jest.fn<Promise<void>, [typeof itemMock]>()
-    funcaoConfirmar.mockResolvedValue(undefined)
+    let resolver: () => void
+
+    const promessa = new Promise<void>((resolve) => {
+      resolver = resolve
+    })
+
+    const funcaoConfirmar = jest.fn(() => promessa)
+
     render(
       <DeleteConfirmButton item={itemMock} titulo={TEXTO_TITULO} onConfirm={funcaoConfirmar} />,
     )
@@ -92,14 +98,21 @@ describe('DeleteConfirmButton', () => {
 
     expect(screen.getByTestId('confirm-button')).toHaveTextContent(TEXTO_EXCLUINDO)
 
+    resolver!()
+
     await waitFor(() => {
       expect(screen.getByTestId('confirm-button')).toHaveTextContent(TEXTO_EXCLUIR)
     })
   })
 
   it('deve desabilitar botão durante loading', async () => {
-    const funcaoConfirmar = jest.fn<Promise<void>, [typeof itemMock]>()
-    funcaoConfirmar.mockResolvedValue(undefined)
+    let resolver: () => void
+
+    const promessa = new Promise<void>((resolve) => {
+      resolver = resolve
+    })
+
+    const funcaoConfirmar = jest.fn(() => promessa)
 
     render(
       <DeleteConfirmButton item={itemMock} titulo={TEXTO_TITULO} onConfirm={funcaoConfirmar} />,
@@ -108,6 +121,8 @@ describe('DeleteConfirmButton', () => {
     fireEvent.click(screen.getByTestId('confirm-button'))
 
     expect(screen.getByTestId('delete-button')).toBeDisabled()
+
+    resolver!()
 
     await waitFor(() => {
       expect(screen.getByTestId('delete-button')).not.toBeDisabled()

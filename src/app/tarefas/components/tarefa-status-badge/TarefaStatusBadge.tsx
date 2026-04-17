@@ -10,7 +10,5 @@ export function TarefaStatusBadge({ status }: { status: StatusTarefa }) {
     return <Badge variant="outline">Pendente</Badge>
   }
 
-  console.warn('Status desconhecido:', status)
-
   return <Badge variant="outline">{status}</Badge>
 }

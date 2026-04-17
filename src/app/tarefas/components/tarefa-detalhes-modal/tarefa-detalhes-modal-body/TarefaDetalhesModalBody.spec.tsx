@@ -28,6 +28,15 @@ jest.mock('@/lib/api/tarefas.api', () => ({
   patchTarefa: jest.fn(),
 }))
 
+jest.mock('@/components/ui/toast', () => ({
+  Toast: ({ message, onClose }: any) => (
+    <div data-testid="toast" role="alert">
+      {message}
+      <button onClick={onClose}>Close</button>
+    </div>
+  ),
+}))
+
 import { TarefaDetalhesModalBody } from './TarefaDetalhesModalBody'
 import { patchTarefa } from '@/lib/api/tarefas.api'
 
@@ -197,14 +206,12 @@ describe('TarefaDetalhesModalBody', () => {
   })
 
   it('não chama onAtualizar quando patchTarefa falha (catch)', async () => {
-    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     ;(patchTarefa as jest.Mock).mockRejectedValueOnce(new Error('falhou'))
-
     const onAtualizar = jest.fn()
+
     render(<TarefaDetalhesModalBody tarefa={tarefaBaseMock} onAtualizar={onAtualizar} />)
 
     fireEvent.click(screen.getByTestId('dialog-title'))
-
     const input = screen.getByRole('textbox')
     fireEvent.change(input, { target: { value: 'Novo título' } })
     fireEvent.blur(input)
@@ -212,9 +219,8 @@ describe('TarefaDetalhesModalBody', () => {
     await waitFor(() => {
       expect(patchTarefa).toHaveBeenCalledTimes(1)
     })
-    expect(onAtualizar).not.toHaveBeenCalled()
 
-    errSpy.mockRestore()
+    expect(onAtualizar).not.toHaveBeenCalled()
   })
 
   it('renderiza corretamente com status CONCLUIDA', () => {

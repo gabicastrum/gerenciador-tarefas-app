@@ -16,5 +16,4 @@ describe('Header', () => {
 
     expect(screen.getByText('US')).toBeInTheDocument()
   })
-
 })

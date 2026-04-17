@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TarefaItem } from '../tarefa-item/TarefaItem'
 import { TarefaResponseDTO } from '@/types/tarefas'
+import { Toast } from '@/components/ui/toast'
+
 import {
   Pagination,
   PaginationContent,
@@ -20,6 +22,9 @@ interface Props {
 }
 
 const MENSAGEM_NENHUMA_TAREFA = 'Nenhuma tarefa encontrada.'
+const MENSAGEM_SUCESSO_DELETE = 'Tarefa deletada com sucesso!'
+const MENSAGEM_ERRO_DELETE = 'Erro ao deletar tarefa'
+
 const PARAMETRO_PAGINA = 'page'
 const PARAMETRO_BUSCA = 'busca'
 
@@ -34,6 +39,9 @@ export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, curr
   const textoBuscaParametro = parametrosBusca.get(PARAMETRO_BUSCA) ?? ''
 
   const [tarefasListadas, setTarefasListadas] = useState<TarefaResponseDTO[]>(tarefasPropriedade)
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success')
 
   useEffect(() => {
     let tarefasProcessadas = tarefasPropriedade
@@ -55,13 +63,29 @@ export function TarefaLista({ tarefas: tarefasPropriedade = [], totalPages, curr
   }, [tarefasPropriedade, textoBuscaParametro])
 
   function handleDelete(tarefaRemovida: TarefaResponseDTO) {
-    setTarefasListadas((tarefasAnterior) =>
-      tarefasAnterior.filter((tarefa) => tarefa.id !== tarefaRemovida.id),
-    )
+    try {
+      setTarefasListadas((tarefasAnterior) =>
+        tarefasAnterior.filter((tarefa) => tarefa.id !== tarefaRemovida.id),
+      )
+
+      setToastMessage(MENSAGEM_SUCESSO_DELETE)
+      setToastVariant('success')
+    } catch {
+      setToastMessage(MENSAGEM_ERRO_DELETE)
+      setToastVariant('error')
+    }
   }
 
   return (
     <div>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
       {tarefasListadas.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-12">{MENSAGEM_NENHUMA_TAREFA}</p>
       ) : (

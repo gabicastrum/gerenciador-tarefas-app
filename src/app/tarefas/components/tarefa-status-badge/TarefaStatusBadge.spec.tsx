@@ -1,6 +1,5 @@
 import { TarefaStatusBadge } from './TarefaStatusBadge'
 import { render, screen } from '@testing-library/react'
-import { StatusTarefa } from '@/types/tarefas'
 
 jest.mock('@/components/ui/badge', () => ({
   Badge: ({ children, variant }: { children: React.ReactNode; variant: string }) => (
@@ -36,35 +35,10 @@ describe('TarefaStatusBadge', () => {
   })
 
   it('deve renderizar o status bruto e variant "outline" para status desconhecido', () => {
-    const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-
-    render(<TarefaStatusBadge status={'DESCONHECIDO' as StatusTarefa} />)
+    render(<TarefaStatusBadge status={'DESCONHECIDO' as never} />)
 
     const badge = screen.getByTestId('badge')
     expect(badge).toHaveTextContent('DESCONHECIDO')
     expect(badge).toHaveAttribute('data-variant', 'outline')
-
-    consoleWarn.mockRestore()
-  })
-
-  it('deve emitir console.warn para status desconhecido', () => {
-    const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-
-    render(<TarefaStatusBadge status={'INVALIDO' as StatusTarefa} />)
-
-    expect(consoleWarn).toHaveBeenCalledWith('Status desconhecido:', 'INVALIDO')
-
-    consoleWarn.mockRestore()
-  })
-
-  it('não deve emitir console.warn para status válidos', () => {
-    const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-
-    render(<TarefaStatusBadge status="PENDENTE" />)
-    render(<TarefaStatusBadge status="CONCLUIDA" />)
-
-    expect(consoleWarn).not.toHaveBeenCalled()
-
-    consoleWarn.mockRestore()
   })
 })

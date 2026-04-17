@@ -41,7 +41,13 @@ const tarefasMockBasicas: TarefaResponseDTO[] = [
 ]
 
 jest.mock('../tarefa-item/TarefaItem', () => ({
-  TarefaItem: ({ tarefa, onExcluir }: { tarefa: TarefaResponseDTO; onExcluir?: (t: TarefaResponseDTO) => void }) => (
+  TarefaItem: ({
+    tarefa,
+    onExcluir,
+  }: {
+    tarefa: TarefaResponseDTO
+    onExcluir?: (t: TarefaResponseDTO) => void
+  }) => (
     <div data-testid={TESTID_TAREFA_ITEM} onClick={() => onExcluir?.(tarefa)}>
       {tarefa.titulo}
     </div>
@@ -88,6 +94,10 @@ jest.mock('next/navigation', () => ({
     get: mockObterParametro,
     toString: () => '',
   }),
+}))
+
+jest.mock('@/components/ui/toast', () => ({
+  Toast: ({ message }: any) => <div>{message}</div>,
 }))
 
 describe('TarefaLista', () => {
@@ -192,6 +202,14 @@ describe('TarefaLista', () => {
     expect(linksEncontrados[0]).toHaveAttribute(ATRIBUTO_HREF, '?page=1')
     expect(linksEncontrados[1]).toHaveAttribute(ATRIBUTO_HREF, '?page=2')
     expect(linksEncontrados[2]).toHaveAttribute(ATRIBUTO_HREF, '?page=3')
+  })
+
+  it('deve exibir toast de sucesso ao excluir tarefa', () => {
+    render(<TarefaLista tarefas={tarefasMockBasicas} totalPages={1} currentPage={1} />)
+
+    fireEvent.click(screen.getByText('Tarefa 1'))
+
+    expect(screen.getByText('Tarefa deletada com sucesso!')).toBeInTheDocument()
   })
 
   describe('Filtro de busca no frontend', () => {

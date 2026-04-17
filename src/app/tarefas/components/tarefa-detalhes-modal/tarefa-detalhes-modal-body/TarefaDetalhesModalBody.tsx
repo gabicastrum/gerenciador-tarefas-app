@@ -6,6 +6,8 @@ import { TarefaStatusBadge } from '../../tarefa-status-badge/TarefaStatusBadge'
 import { TarefaResponseDTO } from '@/types/tarefas'
 import { PencilLine } from 'lucide-react'
 import { patchTarefa } from '@/lib/api/tarefas.api'
+import { handleApiError } from '@/lib/api/response-handler'
+import { Toast } from '@/components/ui/toast'
 
 export function TarefaDetalhesModalBody({
   tarefa,
@@ -21,6 +23,7 @@ export function TarefaDetalhesModalBody({
   const [descricaoEditavel, setDescricaoEditavel] = useState(() => tarefa.descricao || '')
 
   const [erroTitulo, setErroTitulo] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
   const tituloTrim = useMemo(() => tituloEditavel.trim(), [tituloEditavel])
 
   const dataCriacao = useMemo(() => {
@@ -41,8 +44,9 @@ export function TarefaDetalhesModalBody({
         ...tarefa,
         [campo]: novoValor,
       })
-    } catch {
-      console.error('Erro ao atualizar tarefa')
+    } catch (error) {
+      const { message } = handleApiError(error)
+      setToastMessage(message)
     }
   }
 
@@ -60,6 +64,10 @@ export function TarefaDetalhesModalBody({
 
   return (
     <>
+      {toastMessage && (
+        <Toast message={toastMessage} variant="error" onClose={() => setToastMessage(null)} />
+      )}
+
       <DialogHeader className="space-y-2">
         {editandoTitulo ? (
           <div className="space-y-1">

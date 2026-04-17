@@ -10,7 +10,6 @@ const LABEL_BOTAO_CANCELAR = /cancelar/i
 const TEXTO_DESCRICAO_MODAL = /preencha os campos abaixo/i
 const PLACEHOLDER_TITULO = /revisar documentação/i
 const MENSAGEM_ERRO_TITULO_OBRIGATORIO = /o título é obrigatório/i
-const MENSAGEM_ERRO_CRIAR_TAREFA = /não foi possível criar a tarefa/i
 const VALOR_TITULO_TESTE = 'Minha tarefa'
 const CODIGO_RESPOSTA_SUCESSO_ID = 1
 
@@ -94,8 +93,9 @@ describe('TarefaCriarModal', () => {
     expect(refreshMock).toHaveBeenCalled()
   })
 
-  it('deve mostrar erro quando API falha', async () => {
-    ;(createTarefa as jest.Mock).mockRejectedValue(new Error('Erro ao criar'))
+  it('deve mostrar toast com erro quando API falha', async () => {
+    const mensagemErroCustomizada = 'Erro ao conectar ao servidor'
+    ;(createTarefa as jest.Mock).mockRejectedValue(new Error(mensagemErroCustomizada))
 
     render(<TarefaCriarModal />)
 
@@ -107,7 +107,34 @@ describe('TarefaCriarModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_CRIAR_TAREFA }))
 
-    expect(await screen.findByText(MENSAGEM_ERRO_CRIAR_TAREFA)).toBeInTheDocument()
+    await waitFor(
+      () => {
+        expect(screen.getByText(mensagemErroCustomizada)).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('deve mostrar mensagem de erro padrão quando erro não tem mensagem', async () => {
+    const mensagemPadrao = 'Erro ao processar solicitação. Tente novamente.'
+    ;(createTarefa as jest.Mock).mockRejectedValue(new Error())
+
+    render(<TarefaCriarModal />)
+
+    fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_NOVA_TAREFA }))
+
+    const inputTitulo = screen.getByPlaceholderText(PLACEHOLDER_TITULO)
+
+    fireEvent.change(inputTitulo, { target: { value: VALOR_TITULO_TESTE } })
+
+    fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_CRIAR_TAREFA }))
+
+    await waitFor(
+      () => {
+        expect(screen.getByText(mensagemPadrao)).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 
   it('deve fechar modal ao clicar em cancelar', () => {
@@ -120,7 +147,7 @@ describe('TarefaCriarModal', () => {
     expect(screen.queryByText(TEXTO_DESCRICAO_MODAL)).not.toBeInTheDocument()
   })
 
-  it('deve limpar mensagem de erro ao digitador após exibir erro', () => {
+  it('deve limpar mensagem de erro ao digitar após exibir erro', () => {
     render(<TarefaCriarModal />)
 
     fireEvent.click(screen.getByRole('button', { name: LABEL_BOTAO_NOVA_TAREFA }))

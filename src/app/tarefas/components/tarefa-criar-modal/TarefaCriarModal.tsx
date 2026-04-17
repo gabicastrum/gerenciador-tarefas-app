@@ -18,6 +18,8 @@ import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
 import { TarefaResponseDTO } from '@/types/tarefas'
 import { createTarefa } from '@/lib/api/tarefas.api'
+import { handleApiError } from '@/lib/api/response-handler'
+import { Toast } from '@/components/ui/toast'
 
 interface Props {
   onCriada?: (tarefa: TarefaResponseDTO) => void
@@ -29,7 +31,7 @@ const ESTADO_FORMULARIO_INICIAL = {
 }
 
 const MENSAGEM_ERRO_TITULO_OBRIGATORIO = 'O título é obrigatório.'
-const MENSAGEM_ERRO_CRIAR_TAREFA = 'Não foi possível criar a tarefa. Tente novamente.'
+const MENSAGEM_SUCESSO_CRIAR_TAREFA = 'Tarefa criada com sucesso!'
 const TEXTO_BOTAO_CRIANDO = 'Criando...'
 const TEXTO_BOTAO_CRIAR = 'Criar tarefa'
 const LABEL_TITULO = 'Título'
@@ -49,6 +51,8 @@ export function TarefaCriarModal({ onCriada }: Props) {
   const [formulario, setFormulario] = useState(ESTADO_FORMULARIO_INICIAL)
   const [estaCarregando, setEstaCarregando] = useState(false)
   const [mensagemErro, setMensagemErro] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success')
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target
@@ -77,13 +81,19 @@ export function TarefaCriarModal({ onCriada }: Props) {
 
       onCriada?.(novaTarefa)
 
+      setToastMessage(MENSAGEM_SUCESSO_CRIAR_TAREFA)
+      setToastVariant('success')
+
       router.refresh()
 
-      setFormulario(ESTADO_FORMULARIO_INICIAL)
       setModalEstaAberto(false)
-    } catch {
-      setMensagemErro(MENSAGEM_ERRO_CRIAR_TAREFA)
+    } catch (error) {
+      setModalEstaAberto(false)
+      const { message } = handleApiError(error)
+      setToastMessage(message)
+      setToastVariant('error')
     } finally {
+      setFormulario(ESTADO_FORMULARIO_INICIAL)
       setEstaCarregando(false)
     }
   }
@@ -94,130 +104,24 @@ export function TarefaCriarModal({ onCriada }: Props) {
     if (!estaAberto) {
       setFormulario(ESTADO_FORMULARIO_INICIAL)
       setMensagemErro(null)
+      setToastMessage(null)
     }
   }
 
   return (
-    <Dialog open={modalEstaAberto} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          className="
-            bg-primary 
-            text-white 
-            border border-gray-300
-            hover:bg-[rgba(169,177,231,1)]
-            active:scale-[0.98]
-            transition-all
-            focus-visible:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-primary
-          "
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Nova tarefa
-        </Button>
-      </DialogTrigger>
+    <>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
 
-      <DialogContent className="sm:max-w-md w-full overflow-hidden bg-white border border-gray-200 shadow-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-foreground">
-            {TITULO_MODAL}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            {DESCRICAO_MODAL}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-4 py-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="titulo">
-              {LABEL_TITULO} <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="titulo"
-              name="titulo"
-              placeholder={PLACEHOLDER_TITULO}
-              value={formulario.titulo}
-              onChange={handleChange}
-              className={`
-                w-full
-                min-w-0
-                bg-muted/50 
-                border 
-                text-foreground 
-                placeholder:text-muted-foreground
-                focus:ring-2 
-                focus:ring-primary
-                ${mensagemErro ? 'border-red-400 focus:ring-red-400' : 'border-border'}
-              `}
-            />
-            {mensagemErro && <p className="text-sm text-red-500 mt-1">{mensagemErro}</p>}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="descricao">{LABEL_DESCRICAO}</Label>
-            <Textarea
-              id="descricao"
-              name="descricao"
-              placeholder={PLACEHOLDER_DESCRICAO}
-              value={formulario.descricao}
-              onChange={handleChange}
-              rows={3}
-              className="
-                w-full
-                min-w-0
-                bg-muted/50 
-                border-border 
-                text-foreground 
-                placeholder:text-muted-foreground
-                focus:ring-2 
-                focus:ring-primary
-                resize-none
-                max-h-32
-                overflow-y-auto
-                break-all
-              "
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5 opacity-60">
-            <Label className="text-muted-foreground">{LABEL_DATA_VENCIMENTO}</Label>
-            <Input
-              placeholder={PLACEHOLDER_DATA_VENCIMENTO}
-              disabled
-              className="
-                bg-muted 
-                border-border 
-                text-muted-foreground 
-                cursor-not-allowed
-              "
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="mt-2">
+      <Dialog open={modalEstaAberto} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
           <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={estaCarregando}
-            className="
-              border-border 
-              text-foreground 
-              hover:bg-muted 
-              active:scale-[0.98] 
-              transition-all
-              focus-visible:outline-none
-              focus-visible:ring-2
-              focus-visible:ring-primary
-            "
-          >
-            {TEXTO_CANCELAR}
-          </Button>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={estaCarregando}
+            size="sm"
             className="
               bg-primary 
               text-white 
@@ -230,10 +134,127 @@ export function TarefaCriarModal({ onCriada }: Props) {
               focus-visible:ring-primary
             "
           >
-            {estaCarregando ? TEXTO_BOTAO_CRIANDO : TEXTO_BOTAO_CRIAR}
+            <Plus className="w-4 h-4 mr-1" />
+            Nova tarefa
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+
+        <DialogContent className="sm:max-w-md w-full overflow-hidden bg-white border border-gray-200 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-foreground">
+              {TITULO_MODAL}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              {DESCRICAO_MODAL}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="titulo">
+                {LABEL_TITULO} <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="titulo"
+                name="titulo"
+                placeholder={PLACEHOLDER_TITULO}
+                value={formulario.titulo}
+                onChange={handleChange}
+                className={`
+                  w-full
+                  min-w-0
+                  bg-muted/50 
+                  border 
+                  text-foreground 
+                  placeholder:text-muted-foreground
+                  focus:ring-2 
+                  focus:ring-primary
+                  ${mensagemErro ? 'border-red-400 focus:ring-red-400' : 'border-border'}
+                `}
+              />
+              {mensagemErro && <p className="text-sm text-red-500 mt-1">{mensagemErro}</p>}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="descricao">{LABEL_DESCRICAO}</Label>
+              <Textarea
+                id="descricao"
+                name="descricao"
+                placeholder={PLACEHOLDER_DESCRICAO}
+                value={formulario.descricao}
+                onChange={handleChange}
+                rows={3}
+                className="
+                  w-full
+                  min-w-0
+                  bg-muted/50 
+                  border-border 
+                  text-foreground 
+                  placeholder:text-muted-foreground
+                  focus:ring-2 
+                  focus:ring-primary
+                  resize-none
+                  max-h-32
+                  overflow-y-auto
+                  break-all
+                "
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5 opacity-60">
+              <Label className="text-muted-foreground">{LABEL_DATA_VENCIMENTO}</Label>
+              <Input
+                placeholder={PLACEHOLDER_DATA_VENCIMENTO}
+                disabled
+                className="
+                  bg-muted 
+                  border-border 
+                  text-muted-foreground 
+                  cursor-not-allowed
+                "
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={estaCarregando}
+              className="
+                border-border 
+                text-foreground 
+                hover:bg-muted 
+                active:scale-[0.98] 
+                transition-all
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+              "
+            >
+              {TEXTO_CANCELAR}
+            </Button>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={estaCarregando}
+              className="
+                bg-primary 
+                text-white 
+                border border-gray-300
+                hover:bg-[rgba(169,177,231,1)]
+                active:scale-[0.98]
+                transition-all
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+              "
+            >
+              {estaCarregando ? TEXTO_BOTAO_CRIANDO : TEXTO_BOTAO_CRIAR}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
