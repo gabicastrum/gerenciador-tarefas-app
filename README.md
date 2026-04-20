@@ -7,15 +7,12 @@
 
 | Tecnologia | Descrição |
 |---|---|
-| ⚛️ **React 19** | Biblioteca principal para construção de interfaces |
-| 🔺 **Next.js 16** | Framework React com roteamento e renderização |
-| 🟦 **TypeScript 5** | Tipagem estática para maior segurança no código |
-| 🎨 **Tailwind CSS 4** | Estilização utilitária |
+| ⚛️ **React** | Biblioteca principal para construção de interfaces |
+| 🔺 **Next.js** | Framework React com roteamento e renderização |
+| 🟦 **TypeScript ** | Tipagem estática para maior segurança no código |
+| 🎨 **Tailwind CSS** | Estilização utilitária |
 | 🧩 **shadcn/ui + Radix UI** | Componentes de interface acessíveis e reutilizáveis |
-| 📋 **React Hook Form** | Gerenciamento de formulários |
-| 🔗 **Hookform Resolvers** | Integração entre React Hook Form e Zod |
 | 🧪 **Jest + Testing Library** | Testes unitários e de componentes |
-| 💅 **Sass** | Pré-processador CSS |
 | 🔍 **ESLint + Prettier** | Linting e formatação de código |
 
 ---
@@ -68,6 +65,8 @@ http://localhost:3000
 ---
 
 ## 🔌 Conexão com o Backend
+
+Repositório do Backend: https://github.com/gabicastrum/gerenciador-tarefas-api
 
 O frontend consome a API REST disponível em `http://localhost:8080`. Certifique-se de que o backend está rodando antes de iniciar a aplicação.
 
