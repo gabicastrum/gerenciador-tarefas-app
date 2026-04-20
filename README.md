@@ -9,7 +9,7 @@
 |---|---|
 | ⚛️ **React** | Biblioteca principal para construção de interfaces |
 | 🔺 **Next.js** | Framework React com roteamento e renderização |
-| 🟦 **TypeScript ** | Tipagem estática para maior segurança no código |
+| 🟦 **TypeScript** | Tipagem estática para maior segurança no código |
 | 🎨 **Tailwind CSS** | Estilização utilitária |
 | 🧩 **shadcn/ui + Radix UI** | Componentes de interface acessíveis e reutilizáveis |
 | 🧪 **Jest + Testing Library** | Testes unitários e de componentes |
